@@ -62,7 +62,7 @@
       async function evaluate() {
         var lines = input.split("\n").map(function(l){ return l.trim(); }).filter(Boolean);
         if (!lines.length) { setError("Enter at least one task statement."); return; }
-        if (lines.length > 50) { setError("Please submit 50 or fewer tasks at a time."); return; }
+        if (lines.length > 20) { setError("Please submit 20 or fewer tasks at a time."); return; }
         setError(""); setLoading(true); setResults([]); setExpanded(null); setFilter("ALL");
         try {
           var numbered = lines.map(function(l,i){ return (i+1) + ". " + l; }).join("\n");
