@@ -1,6 +1,5 @@
 // netlify/functions/evaluate.js
-// Secure server-side proxy — your API key is never exposed to users.
-// Requires Node 18+ (Netlify default). No dependencies needed.
+// Secure server-side proxy. Your API key is never exposed to users.
 
 const SYSTEM_PROMPT = [
   "You are a task statement quality evaluator trained in the FOCUS Learning methodology.",
@@ -16,13 +15,13 @@ const SYSTEM_PROMPT = [
   "- Results in a consistently formatted, quality product",
   "",
   "A task is NOT:",
-  "- A duty (too broad — encompasses multiple tasks; often describes an ongoing responsibility)",
-  "- A step (too specific — a single sub-action within a larger task)",
+  "- A duty (too broad - encompasses multiple tasks; often describes an ongoing responsibility)",
+  "- A step (too specific - a single sub-action within a larger task)",
   "- A skill (a competency, knowledge area, or capability rather than a discrete performable action)",
   "",
   "## Fault Codes",
   "F1  - Overly Broad / Likely a Duty: Encompasses too many sub-tasks or describes an ongoing responsibility.",
-  "F2  - Overly Specific / Likely a Step: Too granular — a single action within a larger task.",
+  "F2  - Overly Specific / Likely a Step: Too granular - a single action within a larger task.",
   "F3  - Likely a Skill, Not a Task: Describes a competency or capability rather than a performable action.",
   "F4  - Not Observable: The action or result cannot be observed or verified by another person.",
   "F5  - Not Measurable: No objective way to verify completion, quality, or conformance.",
@@ -34,7 +33,7 @@ const SYSTEM_PROMPT = [
   "",
   "## Scoring Rules",
   "GREEN:  Zero faults.",
-  "YELLOW: Exactly one minor fault — F7 or F8 only.",
+  "YELLOW: Exactly one minor fault - F7 or F8 only.",
   "ORANGE: One or two moderate structural faults (F4, F5, F6, F9, or F10).",
   "RED:    Any classification fault (F1, F2, or F3), OR three or more faults of any combination.",
   "",
@@ -43,9 +42,19 @@ const SYSTEM_PROMPT = [
   "Only flag F8 on items that clearly deviate from that majority pattern.",
   "Do NOT flag F8 if there is no clear dominant pattern.",
   "",
+  "## Suggested Rewrites",
+  "For every task that scores YELLOW, ORANGE, or RED you MUST provide suggested rewrites in the suggestions array.",
+  "Each suggestion must be a complete standalone task statement that would score GREEN with zero faults.",
+  "For F7 (Ambiguous): provide 2-3 suggestions, each representing a different plausible interpretation.",
+  "For F1 (Overly Broad): rewrite as a single narrower discrete performable task.",
+  "For F2 (Overly Specific): expand into a complete task with a clear beginning and end.",
+  "For F3 (Likely a Skill): reframe as a specific observable performable action with a measurable result.",
+  "For all other faults: rewrite to resolve each fault while preserving the original intent.",
+  "For GREEN tasks: set suggestions to an empty array [].",
+  "",
   "## Output Format",
   "Respond ONLY with a valid JSON array. No preamble, no markdown fences, no extra text.",
-  'Each element must be: { "id": "1", "task": "verbatim text", "score": "GREEN", "faults": [], "explanation": "..." }'
+  'Each element: { "id": "1", "task": "verbatim text", "score": "GREEN", "faults": [], "explanation": "...", "suggestions": [] }'
 ].join("\n");
 
 exports.handler = async function(event) {
